@@ -107,3 +107,9 @@ AllCO2 %>%
   theme_bw()
 
 ggsave(here("Output","pH_Lagoon_Reef.png"), width = 4, height = 3)
+
+## plot TA vs DIC
+
+AllCO2 %>%
+  ggplot(aes(x = DIC, y = TA, color = Day_Night))+
+  geom_point()
