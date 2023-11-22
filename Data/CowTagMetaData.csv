@@ -1,4 +1,4 @@
-Site,CowTagID,Depth,Time_of_Depth,Lat,Long,Notes
+Site,CowTagID,Depth_logger,Time_of_Depth,Lat,Long,Notes
 La Source,1,8.5344,10/30/2023 6:00,17.6379,149.61462,maybe
 La Source,2,7.3152,10/30/2023 6:00,,,
 La Source,3,8.8392,10/30/2023 6:00,,,

@@ -17,11 +17,11 @@ ProfileTimes<-read_csv(here("Data","ProfileTimes.csv"))%>%
   )
 
 # The CT data
-CT<-read_csv(here("Data","LoggerData","Processed","Calibrated_ProfileBothSites.csv")) %>%
+CT<-read_csv(here("Data","LoggerData","Profile_Processed","Calibrated_ProfileBothSites.csv")) %>%
   select(Date, TempInSitu, Salinity_psu)
 
 # The DepthData
-WL<-read_csv(here("Data","LoggerData","Processed","Calibrated_ProfilerBothSites_WL.csv"))%>%
+WL<-read_csv(here("Data","LoggerData","Profile_Processed","Calibrated_ProfilerBothSites_WL.csv"))%>%
   mutate(Date = mdy_hms(Date))%>%
   select(Date, Depth_m)
 
