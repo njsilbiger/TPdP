@@ -15,7 +15,10 @@ library(ggridges)
 pHcalib<-read_csv(here("Data","Tris_Calibration_Log.csv")) %>%
   mutate(TrisCalDate = ymd(TrisCalDate))
 
-pHData<-read_csv(here("Data","pHProbe_temp_edit.csv"))%>%
+# pHData<-read_csv(here("Data","pHProbe_temp_edit.csv"))%>%
+#   mutate(TrisCalDate = ymd(TrisCalDate))
+
+pHData<-read_csv(here("Data","pHProbe_Data.csv"))%>%
   mutate(TrisCalDate = ymd(TrisCalDate))
 
 ## take the mV calibration files by each date and use them to calculate pH
