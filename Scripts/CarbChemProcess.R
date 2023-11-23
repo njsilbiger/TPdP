@@ -56,8 +56,30 @@ pHSlope <-pHSlope%>%
 
 pHSlope$TA[NoTA]<-NA # make TA na again for the missing values
 
+#### Calculate the CO2 data #####
+pHSlope_filtered <- pHSlope %>%
+  drop_na(TA)
+
+AllCO2<-carb(8, pHSlope_filtered$pH, pHSlope_filtered$TA/1000000, S=pHSlope_filtered$Salinity_In_Field, T=pHSlope_filtered$TempInSitu, Patm=1, P=0, Pt=0, Sit=0,
+             k1k2="x", kf="x", ks="d", pHscale="T", b="u74", gas="potential", 
+             warn="y", eos="eos80")
+
+AllCO2 <- AllCO2 %>%
+  mutate(ALK = ALK*1000000,
+         CO2 = CO2*1000000,
+         CO3 = CO3*1000000,
+         DIC = DIC*1000000,
+         HCO3 = HCO3*1000000) %>% # convert everything back to umol %>%
+  select(DIC, pCO2 = pCO2insitu, CO2, CO3, HCO3, OmegaCalcite, OmegaAragonite) 
+
+AllCO2 <- pHSlope_filtered %>%
+  select(Site, CowTagID, SeepCode, Date, SamplingTime)%>%
+  bind_cols(AllCO2) %>%
+  right_join(pHSlope) %>%
+  select(Site, CowTagID, SeepCode, Date, Day_Night, SamplingTime, Tide, Seep_Reef,DIC, pCO2,OmegaAragonite,TA, pH, Salinity_In_Field, TempInSitu)
+
 ### Make some plots
-pHSlope %>%
+AllCO2 %>%
   filter(Seep_Reef == "Seep") %>%
   ggplot(aes(x = Salinity_In_Field, y = pH, color = Site))+
   geom_point()+
@@ -71,7 +93,7 @@ pHSlope %>%
 ggsave(here("Output","pH_Seep.png"), width = 4, height = 3)
 
 
-pHSlope %>%
+AllCO2 %>%
   filter(Seep_Reef == "Reef",
          Site == "Lagoon") %>%
   ggplot(aes(x = Salinity_In_Field-0.8, y = pH, color = Tide))+
@@ -85,3 +107,9 @@ pHSlope %>%
   theme_bw()
 
 ggsave(here("Output","pH_Lagoon_Reef.png"), width = 4, height = 3)
+
+## plot TA vs DIC
+
+AllCO2 %>%
+  ggplot(aes(x = DIC, y = TA, color = Day_Night))+
+  geom_point()
