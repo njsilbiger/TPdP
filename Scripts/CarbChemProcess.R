@@ -21,6 +21,9 @@ pHcalib<-read_csv(here("Data","Tris_Calibration_Log.csv")) %>%
 pHData<-read_csv(here("Data","pHProbe_Data.csv"))%>%
   mutate(TrisCalDate = ymd(TrisCalDate))
 
+# Bring in metadata
+meta<-read_csv(here("Data","CowTagMetaData.csv"))
+
 ## take the mV calibration files by each date and use them to calculate pH
 pHSlope<-pHcalib %>%
   filter(HOBO_Orion =="Orion") %>% # extract only the orion data
@@ -46,7 +49,8 @@ pHSlope$TA[NoTA]<-2300
 
 #Now calculate pH
 pHSlope <-pHSlope%>%
-  mutate(pH_insitu = pHinsi(pH = pH, ALK = TA, Tinsi = TempInSitu, Tlab = TempInLab, 
+  mutate(TA = as.numeric(TA),
+    pH_insitu = pHinsi(pH = pH, ALK = TA, Tinsi = TempInSitu, Tlab = TempInLab, 
                             S = Salinity_In_Field,Pt = 0, k1k2 = "m10", kf = "dg")) %>%
   # mutate(pH_insitu = pHinsi(pH = pH, ALK = TA, Tinsi = TempInSitu, Tlab = TempInLab, 
   #                           S = Salinity,Pt = Phosphate_umolL, k1k2 = "m10", kf = "dg")) %>%
@@ -76,7 +80,8 @@ AllCO2 <- pHSlope_filtered %>%
   select(Site, CowTagID, SeepCode, Date, SamplingTime)%>%
   bind_cols(AllCO2) %>%
   right_join(pHSlope) %>%
-  select(Site, CowTagID, SeepCode, Date, Day_Night, SamplingTime, Tide, Seep_Reef,DIC, pCO2,OmegaAragonite,TA, pH, Salinity_In_Field, TempInSitu)
+  select(Site, CowTagID, SeepCode, Date, Day_Night, SamplingTime, Tide, Seep_Reef,DIC, pCO2,OmegaAragonite,TA, pH, Salinity_In_Field, TempInSitu)%>%
+  mutate(Day_Night = factor(Day_Night, levels = c("Dawn","Noon","Dusk")))
 
 ### Make some plots
 AllCO2 %>%
@@ -111,5 +116,31 @@ ggsave(here("Output","pH_Lagoon_Reef.png"), width = 4, height = 3)
 ## plot TA vs DIC
 
 AllCO2 %>%
-  ggplot(aes(x = DIC, y = TA, color = Day_Night))+
-  geom_point()
+ # filter(CowTagID!= 5)%>%
+  ggplot(aes(x = DIC*Salinity_In_Field/37, y = TA*Salinity_In_Field/37, color = Site))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+#  geom_label(aes(label = CowTagID))+
+  facet_wrap(~Day_Night, scales = "free")
+
+AllCO2 %>%
+  ggplot(aes(x = Site, color = Day_Night, y = TA*Salinity_In_Field/37))+
+  geom_boxplot()+
+  facet_wrap(~Seep_Reef, scales = "free")
+
+AllCO2 %>%
+  ggplot(aes(x = Site, color = Day_Night, y = TempInSitu))+
+  geom_boxplot()+
+  facet_wrap(~Seep_Reef)
+
+AllCO2 %>%
+  left_join(meta)%>%
+  filter(Site != "Lagoon",
+         !CowTagID %in%c(1,12,5))%>%
+  ggplot(aes(x = log(Depth_logger), color = Site, y = TempInSitu))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+#  geom_label(aes(label = CowTagID))+
+  facet_wrap(~Day_Night)
+
+### check temps for 1 and 12... they are too high and probably wrong... look at calibration

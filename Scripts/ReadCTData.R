@@ -170,6 +170,34 @@ P_Source_Temp<-AllData %>%
   
 ggsave(here("Output","Seeps.png"), width = 8, height = 8)
 
+### Average temperatures
+Means<-AllData %>%
+  group_by(Site, CowTagID)%>%
+  summarise(MeanTemp = mean(TempInSitu, na.rm = TRUE),
+            MinTemp = min(TempInSitu, na.rm = TRUE),
+            MaxTemp = max(TempInSitu, na.rm = TRUE),
+            MeanSal = mean(Salinity_psu, na.rm = TRUE),
+            MinSal = min(Salinity_psu, na.rm = TRUE),
+            MaxSal = max(Salinity_psu, na.rm = TRUE),
+            Depth_logger = mean(Depth_logger, na.rm = TRUE))
+
+Means %>%
+  filter(!CowTagID %in% c(5,41))%>%
+  ggplot(aes(color = Depth_logger,x = MinSal, y = MinTemp, color = Site))+
+  geom_point()+
+  facet_wrap(~Site, scale = "free")
+
+Means %>%
+  filter(!CowTagID %in% c(5,41))%>%
+  ggplot(aes(x = Site, y = MinSal, color = Site))+
+  geom_boxplot()
+
+AllData %>%
+  filter(Site == "Lagoon",
+         CowTagID !=41) %>%
+  ggplot(aes(x = Depth_m, y = Salinity_psu))+
+  geom_point()+
+  facet_wrap(~CowTagID, scale = "free")
 
 ##### Extract the in situ Temps for pH ###
 pHData<-read_csv(here("Data","pHProbe_Data.csv")) %>%
