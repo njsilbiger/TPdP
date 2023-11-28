@@ -144,3 +144,12 @@ AllCO2 %>%
   facet_wrap(~Day_Night)
 
 ### check temps for 1 and 12... they are too high and probably wrong... look at calibration
+
+## Plot TA vs Salinity
+AllCO2 %>%
+  filter(Site != "Lagoon")%>%
+  droplevels()%>%
+  ggplot(aes(color = Site, x = Day_Night , y = pH))+
+  geom_boxplot()+
+  #geom_label(aes(label = CowTagID))+
+  facet_wrap(~Seep_Reef)

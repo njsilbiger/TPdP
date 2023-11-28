@@ -199,6 +199,53 @@ AllData %>%
   geom_point()+
   facet_wrap(~CowTagID, scale = "free")
 
+## Plot average saily salinity and temperature data 
+DailyMeans <- AllData %>%
+  mutate(Day = as.Date(Date)) %>%
+  group_by(Site,CowTagID, Day)%>%
+  summarise(Temp_mean  = mean(TempInSitu, na.rm = TRUE),
+            Salinity_mean = mean(Salinity_psu, na.rm = TRUE),
+            DTR = max(TempInSitu, na.rm = TRUE) - min(TempInSitu, na.rm = TRUE),
+            Temp_var = var(TempInSitu, na.rm = TRUE),
+            Sal_var = var(Salinity_psu, na.rm = TRUE),
+            DSR = max(Salinity_psu, na.rm = TRUE) - min(Salinity_psu, na.rm = TRUE),
+            Depth_mean = mean(Depth_logger, na.rm = TRUE))%>%
+  mutate(Seep_Reef = ifelse(CowTagID %in% c(5,41), "Seep", "Reef"),
+         DSR = ifelse(is.finite(DSR), DSR, NA))
+
+DailyMeans %>%
+  filter(
+         Site != "Lagoon")%>%
+  drop_na(DSR) %>%
+  ggplot(aes(x = Temp_var, y = Sal_var, color = Site))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  labs(x = "Daily Temperature Variance",
+       y = "Daily Salinity Variance")+
+  facet_wrap(~Seep_Reef, scales = "free")+
+  theme_bw()
+
+DailyMeans %>%
+  filter(#Sal_var<1,
+         Site == "Lagoon"
+         )%>%
+  ggplot(aes(x = Temp_var, y = Sal_var))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  labs(x = "Daily Temperature Variance",
+       y = "Daily Salinity Variance")+
+  facet_wrap(~Seep_Reef, scale = "free")+
+  theme_bw()
+
+
+DailyMeans %>%
+  group_by(Site, CowTagID)%>%
+  summarise_if(is.numeric, mean)%>%
+  filter(!CowTagID %in% c(5,41),
+         Site != "Lagoon")%>%
+  ggplot(aes(y = Sal_var, x = Depth_mean, color = Site))+
+  geom_point()
+
 ##### Extract the in situ Temps for pH ###
 pHData<-read_csv(here("Data","pHProbe_Data.csv")) %>%
   mutate(Date = mdy_hms(paste(Date,as.character(SamplingTime))))
