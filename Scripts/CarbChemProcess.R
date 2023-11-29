@@ -123,21 +123,31 @@ AllCO2 %>%
   geom_point()+
   geom_smooth(method = "lm")+
 #  geom_label(aes(label = CowTagID))+
-  facet_wrap(~Seep_Reef, scales = "free")
+  facet_wrap(Day_Night~Seep_Reef, scales = "free")
 
 AllCO2 %>%
    filter(Site == "Lagoon")%>%
-  ggplot(aes(x = DIC*Salinity_In_Field/37, y = TA*Salinity_In_Field/37, color = Site))+
+  ggplot(aes(x = DIC, y = TA, color = Day_Night))+
   geom_point()+
   geom_smooth(method = "lm")+
   #  geom_label(aes(label = CowTagID))+
-  facet_wrap(~Seep_Reef, scales = "free")
+  facet_wrap(~Day_Night)
 
 AllCO2 %>%
-  filter(CowTagID == 5)%>%
+  #filter(CowTagID == 5)%>%
+  filter(CowTagID == c(5,41))%>%
   ggplot(aes(x = Salinity_In_Field, y = pH))+
-  geom_point()
+  geom_point()+
+  geom_smooth(method = "lm")+
+  facet_wrap(~Site)
 
+AllCO2 %>%
+  #filter(CowTagID == 5)%>%
+  filter(!CowTagID %in% c(5,41))%>%
+  ggplot(aes(x = DIC*Salinity_In_Field/37, y = pH))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  facet_wrap(~Site)
 
 AllCO2 %>%
   ggplot(aes(x = Site, color = Day_Night, y = TA))+
@@ -163,9 +173,9 @@ AllCO2 %>%
 
 ## Plot TA vs Salinity
 AllCO2 %>%
-  filter(Site != "Lagoon")%>%
+#  filter(Site == "Lagoon")%>%
   droplevels()%>%
-  ggplot(aes(color = Site, x = Day_Night , y = pH))+
+  ggplot(aes(color = Site, x = Day_Night , y = TA))+
   geom_boxplot()+
   #geom_label(aes(label = CowTagID))+
   facet_wrap(~Seep_Reef)
