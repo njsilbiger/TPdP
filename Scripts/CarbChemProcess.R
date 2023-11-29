@@ -116,15 +116,31 @@ ggsave(here("Output","pH_Lagoon_Reef.png"), width = 4, height = 3)
 ## plot TA vs DIC
 
 AllCO2 %>%
- # filter(CowTagID!= 5)%>%
+  filter(Site!= "Lagoon",
+         #DIC < 2200
+              )%>%
   ggplot(aes(x = DIC*Salinity_In_Field/37, y = TA*Salinity_In_Field/37, color = Site))+
   geom_point()+
   geom_smooth(method = "lm")+
 #  geom_label(aes(label = CowTagID))+
-  facet_wrap(~Day_Night, scales = "free")
+  facet_wrap(~Seep_Reef, scales = "free")
 
 AllCO2 %>%
-  ggplot(aes(x = Site, color = Day_Night, y = TA*Salinity_In_Field/37))+
+   filter(Site == "Lagoon")%>%
+  ggplot(aes(x = DIC*Salinity_In_Field/37, y = TA*Salinity_In_Field/37, color = Site))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  #  geom_label(aes(label = CowTagID))+
+  facet_wrap(~Seep_Reef, scales = "free")
+
+AllCO2 %>%
+  filter(CowTagID == 5)%>%
+  ggplot(aes(x = Salinity_In_Field, y = pH))+
+  geom_point()
+
+
+AllCO2 %>%
+  ggplot(aes(x = Site, color = Day_Night, y = TA))+
   geom_boxplot()+
   facet_wrap(~Seep_Reef, scales = "free")
 
@@ -153,3 +169,4 @@ AllCO2 %>%
   geom_boxplot()+
   #geom_label(aes(label = CowTagID))+
   facet_wrap(~Seep_Reef)
+
