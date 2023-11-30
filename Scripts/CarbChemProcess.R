@@ -44,28 +44,26 @@ pHSlope<-pHData %>%
 # The TA data is missing from some bottles because of lack of water, but it really doesnt affect the pH calc.
 # I am replacing the missing values with 2300 for the pH calculation then converting it back to NA
 
-NoTA<-which(is.na(pHSlope$TA))
-pHSlope$TA[NoTA]<-2300
+#NoTA<-which(is.na(pHSlope$TA))
+#pHSlope$TA[NoTA]<-2300
 
 #Now calculate pH
 pHSlope <-pHSlope%>%
   mutate(TA = as.numeric(TA),
     pH_insitu = pHinsi(pH = pH, ALK = TA, Tinsi = TempInSitu, Tlab = TempInLab, 
-                            S = Salinity_In_Field,Pt = 0, k1k2 = "m10", kf = "dg")) %>%
+                            S = Salinity_In_Field,Pt = 0, k1k2 = "m06", kf = "dg", ks = "d")) %>%
   # mutate(pH_insitu = pHinsi(pH = pH, ALK = TA, Tinsi = TempInSitu, Tlab = TempInLab, 
   #                           S = Salinity,Pt = Phosphate_umolL, k1k2 = "m10", kf = "dg")) %>%
   select(!pH) %>% # I only need the in situ pH calculation so remove this
   rename(pH = pH_insitu) %>% # rename it 
   ungroup() 
 
-pHSlope$TA[NoTA]<-NA # make TA na again for the missing values
+#pHSlope$TA[NoTA]<-NA # make TA na again for the missing values
 
 #### Calculate the CO2 data #####
-pHSlope_filtered <- pHSlope %>%
-  drop_na(TA)
 
-AllCO2<-carb(8, pHSlope_filtered$pH, pHSlope_filtered$TA/1000000, S=pHSlope_filtered$Salinity_In_Field, T=pHSlope_filtered$TempInSitu, Patm=1, P=0, Pt=0, Sit=0,
-             k1k2="x", kf="x", ks="d", pHscale="T", b="u74", gas="potential", 
+AllCO2<-carb(8, pHSlope$pH, pHSlope$TA/1000000, S=pHSlope$Salinity_In_Field, T=pHSlope$TempInSitu, Patm=1, P=0, Pt=0, Sit=0,
+             k1k2="m06", kf="dg", ks="d", pHscale="T", b="u74", gas="potential", 
              warn="y", eos="eos80")
 
 AllCO2 <- AllCO2 %>%
@@ -76,7 +74,7 @@ AllCO2 <- AllCO2 %>%
          HCO3 = HCO3*1000000) %>% # convert everything back to umol %>%
   select(DIC, pCO2 = pCO2insitu, CO2, CO3, HCO3, OmegaCalcite, OmegaAragonite) 
 
-AllCO2 <- pHSlope_filtered %>%
+AllCO2 <- pHSlope %>%
   select(Site, CowTagID, SeepCode, Date, SamplingTime)%>%
   bind_cols(AllCO2) %>%
   right_join(pHSlope) %>%
@@ -119,28 +117,27 @@ AllCO2 %>%
   filter(Site!= "Lagoon",
          #DIC < 2200
               )%>%
-  ggplot(aes(x = DIC*Salinity_In_Field/37, y = TA*Salinity_In_Field/37, color = Site))+
+  ggplot(aes(x = DIC*Salinity_In_Field/37, y = TA*Salinity_In_Field/37, color = Site, shape = Day_Night))+
   geom_point()+
   geom_smooth(method = "lm")+
 #  geom_label(aes(label = CowTagID))+
-  facet_wrap(Day_Night~Seep_Reef, scales = "free")
+  facet_wrap(~Seep_Reef, scales = "free")
 
 AllCO2 %>%
    filter(Site == "Lagoon")%>%
-  ggplot(aes(x = DIC, y = TA, color = Day_Night))+
-  geom_point()+
-  geom_smooth(method = "lm")+
+  ggplot(aes(x = DIC, y = TA))+
+  geom_point(aes(color = Day_Night))+
+  geom_smooth(method = "lm")
   #  geom_label(aes(label = CowTagID))+
-  facet_wrap(~Day_Night)
+ # facet_wrap(~Day_Night)
 
 AllCO2 %>%
   #filter(CowTagID == 5)%>%
   filter(CowTagID %in% c(5,41))%>%
-  ggplot(aes(x = Salinity_In_Field, y = pH))+
+  ggplot(aes(x = Salinity_In_Field, y = pH, color = Site))+
   geom_point()+
-  geom_smooth(method = "lm")+
-  facet_wrap(~Site)
-
+  geom_smooth(method = "lm")
+  
 AllCO2 %>%
   #filter(CowTagID == 5)%>%
   # something off with 10 noon
