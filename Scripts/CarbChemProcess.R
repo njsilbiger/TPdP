@@ -135,7 +135,7 @@ AllCO2 %>%
 
 AllCO2 %>%
   #filter(CowTagID == 5)%>%
-  filter(CowTagID == c(5,41))%>%
+  filter(CowTagID %in% c(5,41))%>%
   ggplot(aes(x = Salinity_In_Field, y = pH))+
   geom_point()+
   geom_smooth(method = "lm")+
@@ -143,16 +143,21 @@ AllCO2 %>%
 
 AllCO2 %>%
   #filter(CowTagID == 5)%>%
+  # something off with 10 noon
   filter(!CowTagID %in% c(5,41))%>%
-  ggplot(aes(x = DIC*Salinity_In_Field/37, y = pH))+
+  ggplot(aes(x = DIC, y = pH))+
   geom_point()+
+#  geom_label(aes(label = CowTagID))+
   geom_smooth(method = "lm")+
   facet_wrap(~Site)
 
 AllCO2 %>%
-  ggplot(aes(x = Site, color = Day_Night, y = TA))+
-  geom_boxplot()+
-  facet_wrap(~Seep_Reef, scales = "free")
+  filter(Seep_Reef == "Seep")%>%
+  ggplot(aes(x = Salinity_In_Field, y = TA))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  facet_wrap(~Site, scale = "free")+
+  theme_bw()
 
 AllCO2 %>%
   ggplot(aes(x = Site, color = Day_Night, y = TempInSitu))+
