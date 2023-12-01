@@ -12,6 +12,7 @@ library(ggridges)
 library(patchwork)
 library(lme4)
 library(lmerTest)
+library(interactions)
 
 
 ## bring in pH calibration files and raw data files
@@ -113,7 +114,7 @@ ggsave(here("Output","pH_Lagoon_Reef.png"), width = 4, height = 3)
 
 ## plot TA vs DIC
 
-AllCO2 %>%
+TADIC<-AllCO2 %>%
   filter(Site!= "Lagoon",
          Seep_Reef == "Reef"
          #DIC < 2200
@@ -122,11 +123,18 @@ AllCO2 %>%
   geom_point()+
   geom_smooth(method = "lm")+
  # geom_label(aes(label = CowTagID))+
+  scale_color_manual(values = c("#122A64","#01c3e6"))+
   labs(x = expression(paste("Salinity-normalized DIC (",mu,"mol kg"^-1,")")),
        y = expression(paste("Salinity-normalized TA (",mu,"mol kg"^-1,")")),
   )+
   facet_wrap(~Day_Night, ncol = 1)+
-  theme_bw()
+  theme_bw()+
+  theme(legend.position = "none",
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.background =element_blank(),
+    strip.text = element_text(size = 16, face = "bold"))
+      
 
 AllCO2 <-AllCO2 %>%
   mutate(TA_salnorm = TA*Salinity_In_Lab/36, # salinity normalized
@@ -143,22 +151,36 @@ plot(ss)
 
 # extract the individual slopes
 #### need to work on this
+test<-bind_rows(data.frame(ss$slopes[[2]]),data.frame(ss$slopes[[3]])) %>%
+  mutate_at(.vars = c("Est.","S.E.","X2.5.","X97.5.", "t.val.","p"), as.numeric)%>%
+  mutate(Day_Night = c("Dusk","Dusk","Noon","Noon"))
 
-# slopes<-tibble(ss$slopes)
-# colnames(slopes)[1]<-"Benthos"
-# 
-# # make the plot
-# P_estimate<-slopes %>%
-#   ggplot(aes(y = Benthos, x = Est., color = Benthos))+
-#   geom_point(size = 3)+
-#   geom_errorbarh(aes(xmin = Est. - S.E.,xmax = Est. + S.E.  ), height = 0.01)+
-#   scale_color_manual(values = cal_palette("chaparral1"))+
-#   labs(x = "TA/DIC Slopes",
-#        y = "")+
-#   theme_bw()+
-#   theme(legend.position = "none",
-#         axis.title = element_text(size = 16),
-#         axis.text = element_text(size = 14))
+a<-data.frame(ss$slopes[[1]]) %>%
+  mutate_at(.vars = c("Est.","S.E.","X2.5.","X97.5.", "t.val.","p"), as.numeric)%>%
+  mutate(Day_Night = c("Dawn","Dawn"))
+
+slopes<-bind_rows(a,test) %>%
+  mutate(Day_Night = factor(Day_Night, levels = c("Dusk","Noon","Dawn")))%>%
+  rename(Site = Value.of.Site)
+
+
+P_estimate<-slopes %>%
+  ggplot(aes(color = Site, x = Est., y = Day_Night))+
+  geom_point(size = 4)+
+  geom_errorbarh(aes(xmin = Est. - S.E.,xmax = Est. + S.E.  ), height = 0.01)+
+  scale_color_manual(values = c("#122A64","#01c3e6"))+
+  labs(x = "TA/DIC Slopes",
+       y = "",
+       color = "")+
+  theme_bw()+
+  theme(legend.position = c(0.2, 0.9),
+        legend.text = element_text(size = 14),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        axis.text.y = element_blank())
+
+
+TADIC|P_estimate
 
 AllCO2 %>%
   filter(Site== "Lagoon",
