@@ -10,6 +10,8 @@ library(lubridate)
 library(calecopal)
 library(ggridges)
 library(patchwork)
+library(lme4)
+library(lmerTest)
 
 
 ## bring in pH calibration files and raw data files
@@ -116,12 +118,47 @@ AllCO2 %>%
          Seep_Reef == "Reef"
          #DIC < 2200
               )%>%
-  ggplot(aes(x = DIC*Salinity_In_Lab/36, y = TA*Salinity_In_Lab/36, color = Site, shape = Day_Night))+
+  ggplot(aes(x = DIC*Salinity_In_Lab/36, y = TA*Salinity_In_Lab/36, color = Site))+
   geom_point()+
   geom_smooth(method = "lm")+
  # geom_label(aes(label = CowTagID))+
-  facet_wrap(~Day_Night, scales = "free")
+  labs(x = expression(paste("Salinity-normalized DIC (",mu,"mol kg"^-1,")")),
+       y = expression(paste("Salinity-normalized TA (",mu,"mol kg"^-1,")")),
+  )+
+  facet_wrap(~Day_Night, ncol = 1)+
+  theme_bw()
 
+AllCO2 <-AllCO2 %>%
+  mutate(TA_salnorm = TA*Salinity_In_Lab/36, # salinity normalized
+         DIC_salnorm = DIC*Salinity_In_Lab/36)
+
+modTADIC<-lmer(TA_salnorm~DIC_salnorm*Day_Night*Site +(1|CowTagID), data =AllCO2 %>%
+               filter(Site!= "Lagoon",
+                      Seep_Reef == "Reef") )
+anova(modTADIC)
+summary(modTADIC)
+
+ss <- sim_slopes(modTADIC, pred = DIC_salnorm, modx = Site, mod2 = Day_Night, johnson_neyman = FALSE)
+plot(ss)
+
+# extract the individual slopes
+#### need to work on this
+
+# slopes<-tibble(ss$slopes)
+# colnames(slopes)[1]<-"Benthos"
+# 
+# # make the plot
+# P_estimate<-slopes %>%
+#   ggplot(aes(y = Benthos, x = Est., color = Benthos))+
+#   geom_point(size = 3)+
+#   geom_errorbarh(aes(xmin = Est. - S.E.,xmax = Est. + S.E.  ), height = 0.01)+
+#   scale_color_manual(values = cal_palette("chaparral1"))+
+#   labs(x = "TA/DIC Slopes",
+#        y = "")+
+#   theme_bw()+
+#   theme(legend.position = "none",
+#         axis.title = element_text(size = 16),
+#         axis.text = element_text(size = 14))
 
 AllCO2 %>%
   filter(Site== "Lagoon",
