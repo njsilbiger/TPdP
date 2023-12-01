@@ -9,6 +9,7 @@ library(here)
 library(lubridate)
 library(calecopal)
 library(ggridges)
+library(patchwork)
 
 
 ## bring in pH calibration files and raw data files
@@ -118,8 +119,69 @@ AllCO2 %>%
   ggplot(aes(x = DIC*Salinity_In_Lab/36, y = TA*Salinity_In_Lab/36, color = Site, shape = Day_Night))+
   geom_point()+
   geom_smooth(method = "lm")+
-#  geom_label(aes(label = CowTagID))+
+ # geom_label(aes(label = CowTagID))+
   facet_wrap(~Day_Night, scales = "free")
+
+
+AllCO2 %>%
+  filter(Site== "Lagoon",
+         Seep_Reef == "Reef"
+         #DIC < 2200
+  )%>%
+  ggplot(aes(x = DIC*Salinity_In_Lab/36, y = TA*Salinity_In_Lab/36, color = Day_Night))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+ # geom_label(aes(label = CowTagID))
+  facet_wrap(~Day_Night, scales = "free")
+
+AllCO2 %>%
+  filter(#Site!= "Lagoon",
+         Seep_Reef == "Reef"
+         #DIC < 2200
+  )%>%
+  group_by(Site, Day_Night)%>%
+  summarise(salmean = mean(Salinity_In_Lab, na.rm = TRUE),
+            salse = sd(Salinity_In_Lab, na.rm = TRUE)/sqrt(n()))%>%
+  ggplot(aes(x = Site, y = salmean, color = Day_Night))+
+  geom_point(size = 3)+
+  geom_errorbar(aes(ymin = salmean - salse, ymax = salmean+salse), width = 0.1)
+
+sal1<-AllCO2 %>%
+  filter(Site!= "Lagoon",
+    #Seep_Reef == "Seep"
+    #DIC < 2200
+  )%>%
+  group_by(Site,Seep_Reef, Day_Night)%>%
+  summarise(salmean = mean(Salinity_In_Lab, na.rm = TRUE),
+            salse = sd(Salinity_In_Lab, na.rm = TRUE)/sqrt(n()))%>%
+  ggplot(aes(x = Site, y = salmean, color = Day_Night))+
+  geom_point(size = 3, position = position_dodge(.2))+
+  geom_errorbar(aes(ymin = salmean - salse, ymax = salmean+salse), width = 0.1, position = position_dodge(.2))+
+  labs(y = "Mean salinity (psu)",
+         x = "",
+         color = "")+
+  facet_wrap(~Seep_Reef, scale = "free")+
+  theme_bw()
+
+sal2<-AllCO2 %>%
+  filter(Site== "Lagoon",
+         #Seep_Reef == "Seep"
+         #DIC < 2200
+  )%>%
+  group_by(Site,Seep_Reef, Day_Night)%>%
+  summarise(salmean = mean(Salinity_In_Lab, na.rm = TRUE),
+            salse = sd(Salinity_In_Lab, na.rm = TRUE)/sqrt(n()))%>%
+  ggplot(aes(x = Site, y = salmean, color = Day_Night))+
+  geom_point(size = 3, position = position_dodge(.2))+
+  geom_errorbar(aes(ymin = salmean - salse, ymax = salmean+salse), width = 0.1, position = position_dodge(.2))+
+  labs(y = "Mean salinity (psu)",
+       x = "",
+       color = "")+
+  facet_wrap(~Seep_Reef, scale = "free")+
+  theme_bw()
+
+
+sal1/sal2
 
 AllCO2 %>%
    filter(Site == "Lagoon",
@@ -150,6 +212,14 @@ AllCO2 %>%
   theme_bw()
 
 AllCO2 %>%
+  filter(Seep_Reef == "Seep")%>%
+  ggplot(aes(x = Salinity_In_Lab, y = TempInSitu))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  facet_wrap(~Site, scale = "free")+
+  theme_bw()
+
+AllCO2 %>%
   ggplot(aes(x = Site, color = Day_Night, y = TempInSitu))+
   geom_boxplot()+
   facet_wrap(~Seep_Reef)
@@ -170,10 +240,10 @@ AllCO2 %>%
 AllCO2 %>%
 #  filter(Site == "Lagoon")%>%
   droplevels()%>%
-  ggplot(aes(color = Site, x = Day_Night , y = TA*Salinity_In_Lab/36))+
+  ggplot(aes(color = Site, x = Day_Night , y = TA))+
   geom_boxplot()+
   #geom_label(aes(label = CowTagID))+
-  facet_wrap(~Seep_Reef)
+  facet_wrap(~Seep_Reef, scale = "free")
 
 
 AllCO2 %>%
