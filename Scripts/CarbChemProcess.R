@@ -115,7 +115,7 @@ ggsave(here("Output","pH_Lagoon_Reef.png"), width = 4, height = 3)
 ## plot TA vs DIC
 
 TADIC<-AllCO2 %>%
-  filter(Site!= "Lagoon",
+  filter(#Site!= "Lagoon",
          Seep_Reef == "Reef"
          #DIC < 2200
               )%>%
@@ -123,7 +123,7 @@ TADIC<-AllCO2 %>%
   geom_point()+
   geom_smooth(method = "lm")+
  # geom_label(aes(label = CowTagID))+
-  scale_color_manual(values = c("#122A64","#01c3e6"))+
+  scale_color_manual(values = c("#122A64","#01c3e6","#5F9EA0"))+
   labs(x = expression(paste("Salinity-normalized DIC (",mu,"mol kg"^-1,")")),
        y = expression(paste("Salinity-normalized TA (",mu,"mol kg"^-1,")")),
   )+
@@ -140,9 +140,15 @@ AllCO2 <-AllCO2 %>%
   mutate(TA_salnorm = TA*Salinity_In_Lab/36, # salinity normalized
          DIC_salnorm = DIC*Salinity_In_Lab/36)
 
+
+modTADIC<-lm(TA_salnorm~DIC_salnorm*Day_Night*Site , data =AllCO2 %>%
+                 filter(#Site!= "Lagoon",
+                   Seep_Reef == "Reef") )
+
 modTADIC<-lmer(TA_salnorm~DIC_salnorm*Day_Night*Site +(1|CowTagID), data =AllCO2 %>%
-               filter(Site!= "Lagoon",
-                      Seep_Reef == "Reef") )
+                 filter(#Site!= "Lagoon",
+                   Seep_Reef == "Reef") )
+
 anova(modTADIC)
 summary(modTADIC)
 
@@ -153,34 +159,64 @@ plot(ss)
 #### need to work on this
 test<-bind_rows(data.frame(ss$slopes[[2]]),data.frame(ss$slopes[[3]])) %>%
   mutate_at(.vars = c("Est.","S.E.","X2.5.","X97.5.", "t.val.","p"), as.numeric)%>%
-  mutate(Day_Night = c("Dusk","Dusk","Noon","Noon"))
+  mutate(Day_Night = c("Noon","Noon","Noon", "Dusk","Dusk","Dusk"))
 
 a<-data.frame(ss$slopes[[1]]) %>%
   mutate_at(.vars = c("Est.","S.E.","X2.5.","X97.5.", "t.val.","p"), as.numeric)%>%
-  mutate(Day_Night = c("Dawn","Dawn"))
+  mutate(Day_Night = c("Dawn","Dawn","Dawn"))
 
 slopes<-bind_rows(a,test) %>%
   mutate(Day_Night = factor(Day_Night, levels = c("Dusk","Noon","Dawn")))%>%
   rename(Site = Value.of.Site)
 
+testint<-bind_rows(data.frame(ss$ints[[2]]),data.frame(ss$ints[[3]])) %>%
+  mutate_at(.vars = c("Est.","S.E.","X2.5.","X97.5.", "t.val.","p"), as.numeric)%>%
+  mutate(Day_Night = c("Noon","Noon","Noon", "Dusk","Dusk","Dusk"))
+
+aint<-data.frame(ss$ints[[1]]) %>%
+  mutate_at(.vars = c("Est.","S.E.","X2.5.","X97.5.", "t.val.","p"), as.numeric)%>%
+  mutate(Day_Night = c("Dawn","Dawn","Dawn"))
+
+ints <-bind_rows(aint,testint) %>%
+  mutate(Day_Night = factor(Day_Night, levels = c("Dusk","Noon","Dawn")))%>%
+  rename(Site = Value.of.Site)
 
 P_estimate<-slopes %>%
   ggplot(aes(color = Site, x = Est., y = Day_Night))+
-  geom_point(size = 4)+
-  geom_errorbarh(aes(xmin = Est. - S.E.,xmax = Est. + S.E.  ), height = 0.01)+
-  scale_color_manual(values = c("#122A64","#01c3e6"))+
+  geom_point(size = 4, position = position_dodge(0.2))+
+  geom_errorbarh(aes(xmin = Est. - S.E.,xmax = Est. + S.E.  ), height = 0.01, position = position_dodge(0.2))+
+  scale_color_manual(values = c("#122A64","#01c3e6","#5F9EA0"))+
   labs(x = "TA/DIC Slopes",
        y = "",
        color = "")+
   theme_bw()+
-  theme(legend.position = c(0.2, 0.9),
+  theme(legend.position = c(0.25, 0.9),
         legend.text = element_text(size = 14),
         axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
-        axis.text.y = element_blank())
+        axis.text.y = element_blank()
+        )
+
+P_ints<-ints %>%
+  ggplot(aes(color = Site, x = Est., y = Day_Night))+
+  geom_point(size = 4)+
+  geom_errorbarh(aes(xmin = Est. - S.E.,xmax = Est. + S.E.  ), height = 0.01)+
+  scale_color_manual(values = c("#122A64","#01c3e6","#5F9EA0"))+
+  labs(x = "Intercept",
+       y = "",
+       color = "")+
+  theme_bw()+
+  theme(legend.position = c(0.15, 0.1),
+        legend.text = element_text(size = 14),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        axis.text.y = element_blank()
+  )
 
 
 TADIC|P_estimate
+
+ggsave(here("Output","TADIC.png"), width = 9, height = 8)
 
 AllCO2 %>%
   filter(Site== "Lagoon",
@@ -206,8 +242,8 @@ AllCO2 %>%
   geom_errorbar(aes(ymin = salmean - salse, ymax = salmean+salse), width = 0.1)
 
 sal1<-AllCO2 %>%
-  filter(Site!= "Lagoon",
-    #Seep_Reef == "Seep"
+  filter(#Site!= "Lagoon",
+    Seep_Reef == "Reef"
     #DIC < 2200
   )%>%
   group_by(Site,Seep_Reef, Day_Night)%>%
@@ -216,15 +252,22 @@ sal1<-AllCO2 %>%
   ggplot(aes(x = Site, y = salmean, color = Day_Night))+
   geom_point(size = 3, position = position_dodge(.2))+
   geom_errorbar(aes(ymin = salmean - salse, ymax = salmean+salse), width = 0.1, position = position_dodge(.2))+
+  scale_color_manual(values = c("#fbc540","#ec5c04","#ad3304"))+
   labs(y = "Mean salinity (psu)",
          x = "",
          color = "")+
-  facet_wrap(~Seep_Reef, scale = "free")+
-  theme_bw()
+ # facet_wrap(~Seep_Reef, scale = "free")+
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(size = 14),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+       # axis.text.y = element_blank()
+  )
 
 sal2<-AllCO2 %>%
-  filter(Site== "Lagoon",
-         #Seep_Reef == "Seep"
+  filter(#Site== "Lagoon",
+         Seep_Reef == "Seep"
          #DIC < 2200
   )%>%
   group_by(Site,Seep_Reef, Day_Night)%>%
@@ -233,14 +276,23 @@ sal2<-AllCO2 %>%
   ggplot(aes(x = Site, y = salmean, color = Day_Night))+
   geom_point(size = 3, position = position_dodge(.2))+
   geom_errorbar(aes(ymin = salmean - salse, ymax = salmean+salse), width = 0.1, position = position_dodge(.2))+
+  scale_color_manual(values = c("#fbc540","#ec5c04","#ad3304"))+
   labs(y = "Mean salinity (psu)",
        x = "",
        color = "")+
-  facet_wrap(~Seep_Reef, scale = "free")+
-  theme_bw()
+  facet_wrap(~Site, scale = "free")+
+  theme_bw()+
+  theme(#legend.position = c(0.15, 0.1),
+    legend.text = element_text(size = 14),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+  #  axis.text.y = element_blank(),
+  strip.text = element_blank()
+  )
 
 
-sal1/sal2
+sal1|sal2
+ggsave(here("Output","SalMean.png"), width = 10, height = 4)
 
 AllCO2 %>%
    filter(Site == "Lagoon",
