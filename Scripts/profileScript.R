@@ -65,7 +65,7 @@ SalinityProf<-AvgProfile %>%
   ggplot(aes(x = Sal, y = -Depth_round, color = Site))+
   geom_point(alpha = 0.2)+
   geom_smooth(orientation = "y", se = FALSE, method = lm, formula = y ~ splines::bs(x, 2))+
-  scale_color_manual(values = c("#122A64","#01c3e6"))+
+  scale_color_manual(values = c("#122A64","#5F9EA0"))+
   #facet_wrap(~Site)+
   labs(y = "Depth (m)",
        x = "Salinity (psu)",
@@ -83,7 +83,7 @@ TempProf<-AvgProfile %>%
   ggplot(aes(x = Temp, y = -Depth_round, color = Site))+
   geom_point(alpha = 0.2)+
   geom_smooth(orientation = "y", se = FALSE, method = lm, formula = y ~ splines::bs(x, 2))+
-  scale_color_manual(values = c("#122A64","#01c3e6"))+
+  scale_color_manual(values = c("#122A64","#5F9EA0"))+
   #facet_wrap(~Site)+
   labs(y = "",
        x = expression(paste("Temperature",~degree,"C")),

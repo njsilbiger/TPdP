@@ -98,14 +98,17 @@ ggsave(here("Output","pH_Seep.png"), width = 4, height = 3)
 
 
 AllCO2 %>%
+  mutate(Day_Night = factor(Day_Night, levels = c("Dawn", "Noon","Dusk")))%>%
   filter(Seep_Reef == "Reef",
-         Site == "Lagoon") %>%
-  ggplot(aes(x = Salinity_In_Lab, y = pH, color = Tide, shape = Day_Night))+
+         Site == "Lagoon"
+         ) %>%
+  ggplot(aes(x = Salinity_In_Lab, y = pH, color = Day_Night))+
   geom_point(aes())+
   geom_smooth(method = "lm")+
+  scale_color_manual(values = c("#fbc540","#ec5c04","#ad3304"))+
   labs(x = "Salinity (psu)",
        y = "pH (total)",
-       color = "Tide",
+       color = "",
        shape = "")+
  # facet_wrap(~Site, scales = "free")+
   theme_bw()
@@ -316,11 +319,22 @@ AllCO2 %>%
 
 AllCO2 %>%
   filter(Seep_Reef == "Seep")%>%
-  ggplot(aes(x = Salinity_In_Lab, y = TA))+
+  ggplot(aes(x = Salinity_In_Lab, y = TA, color = Site))+
   geom_point()+
   geom_smooth(method = "lm")+
-  facet_wrap(~Site, scale = "free")+
-  theme_bw()
+  scale_color_manual(values = c("#122A64","#01c3e6"))+
+  facet_wrap(~Site, scale = "free", ncol = 1)+
+  labs(y = expression(paste("TA (",mu,"mol kg"^-1,")")),
+       x = "Salinity (psu)")+
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(size = 14),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        strip.text = element_text(size = 16),
+        strip.background = element_blank())
+
+ggsave(here("Output","TA_sal.png"), width = 4, height = 8)
 
 AllCO2 %>%
   filter(Seep_Reef == "Seep")%>%

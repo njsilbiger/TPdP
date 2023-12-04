@@ -165,10 +165,53 @@ P_Source_Temp<-AllData %>%
         plot.title = element_text(hjust = 0.5)
   )
 
-(P_lagoon+P_Source)/(P_Lagoon_Temp+P_Source_Temp)+
+P_nord<-AllData %>%
+  filter(CowTagID == 20)%>%
+  ggplot(aes(x = TempInSitu, y = Salinity_psu))+
+  geom_point(aes(color = TempInSitu), alpha = 0.5)+
+  # coord_trans(x = "log")+
+  scale_colour_viridis_c(limits = c(24.5,29.6), trans = "log")+
+  geom_smooth(method = lm, 
+              formula = y ~ splines::ns(log(x), 2), 
+              color = "black")+
+  ylim(18,37)+
+  xlim(24.5,29.6)+
+  labs(x = expression(paste("Temperature",~degree,"C")),
+       y = "Salinity (psu)",
+       title = " ",
+       color = expression(paste("Temperature",~degree,"C")))+
+  theme_bw()+
+  theme(legend.position = "bottom",
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title = element_text(size = 16),
+        axis.text.x = element_text(size = 14),
+        plot.title = element_text(hjust = 0.5)
+  )
+
+P_nord_depth<-AllData %>%
+  filter(CowTagID == 20)%>%
+  ggplot(aes(x = Depth_m+.1, y = Salinity_psu))+
+  geom_point(aes(color = TempInSitu), alpha = 0.5)+
+  coord_trans(x = "log")+
+  scale_colour_viridis_c(limits = c(24.5,29.6), trans = "log")+
+  ylim(18,37)+
+  labs(x = "Water Height (m)",
+       y = "Salinity (psu)",
+       title = "Nordhoff",
+       color = expression(paste("Temperature",~degree,"C")))+
+  theme_bw()+
+  theme(legend.position = "bottom",
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title = element_text(size = 16),
+        axis.text.x = element_text(size = 14)
+  )
+
+(P_lagoon+P_Source+P_nord_depth)/(P_Lagoon_Temp+P_Source_Temp+P_nord)+
   plot_layout(guides = "collect")&theme(legend.position = "none", title = element_text(size = 16), plot.title = element_text(hjust = 0.5))
   
-ggsave(here("Output","Seeps.png"), width = 8, height = 8)
+ggsave(here("Output","Seeps.png"), width = 10, height = 8)
 
 ### Average temperatures
 Means<-AllData %>%
@@ -180,6 +223,29 @@ Means<-AllData %>%
             MinSal = min(Salinity_psu, na.rm = TRUE),
             MaxSal = max(Salinity_psu, na.rm = TRUE),
             Depth_logger = mean(Depth_logger, na.rm = TRUE))
+
+# Average salinity for sampling Day
+AllData %>%
+  filter(CowTagID == 5,
+    Date > mdy_hms("10/30/2023 05:00:00"), Date <mdy_hms("10/30/2023 18:00:00") )%>%
+mutate(Day_Night = case_when( Date > mdy_hms("10/30/2023 06:00:00") & Date < mdy_hms("10/30/2023 07:00:00") ~ "Dawn",
+                  Date > mdy_hms("10/30/2023 11:00:00") & Date < mdy_hms("10/30/2023 12:00:00") ~ "Noon",
+                  Date > mdy_hms("10/30/2023 17:00:00") & Date < mdy_hms("10/30/2023 18:00:00") ~ "Dusk")) %>%
+  drop_na(Day_Night) %>%
+  group_by(Day_Night)%>%
+  summarise(MeanTemp = mean(TempInSitu, na.rm = TRUE),
+            MinTemp = min(TempInSitu, na.rm = TRUE),
+            MaxTemp = max(TempInSitu, na.rm = TRUE),
+            MeanSal = mean(Salinity_psu, na.rm = TRUE),
+            MinSal = min(Salinity_psu, na.rm = TRUE),
+            MaxSal = max(Salinity_psu, na.rm = TRUE),
+            Depth_logger = mean(Depth_logger, na.rm = TRUE))
+
+Means %>%
+  filter(!CowTagID %in% c(5,41))%>%
+  ggplot(aes(color = Depth_logger,x = MinSal, y = MinTemp, color = Site))+
+  geom_point()+
+  facet_wrap(~Site, scale = "free")
 
 Means %>%
   filter(!CowTagID %in% c(5,41))%>%
