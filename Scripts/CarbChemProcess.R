@@ -380,3 +380,44 @@ AllCO2 %>%
   geom_smooth(method = "lm")+
   #  geom_label(aes(label = CowTagID))+
   facet_wrap(~Day_Night, scale = "free")
+
+#### Turbinaria data #####
+NN<-meta %>%
+  ggplot(aes(x = del15N, y = N_percent))+
+  geom_point()+
+  geom_smooth(data =  meta %>% filter(Site != "Nordhoff"),method = "lm")+
+  geom_point(data = meta %>% filter(CowTagID %in% c(41,5)), color = "red")+
+  facet_wrap(~Site, scales = "free")+
+  theme_bw()
+
+ggsave(here("Output","NvsN.png"), width = 8, height = 4)
+
+# mean and SE for the different values
+
+TurbMeans<-meta %>%
+  filter(CowTagID != 41)%>% # remove the lagoon seep
+  select(Site, del15N:C_percent)%>%
+  pivot_longer(cols = del15N:C_percent)%>%
+  group_by(Site, name)%>%
+  summarise(MeanValue = mean(value,na.rm = TRUE),
+            MeanSE = sd(value, na.rm = TRUE)/sqrt(n()))
+
+## pull out the seep samples only
+SeepN<-meta %>% 
+  filter(CowTagID %in% c(5,41))%>%
+  select(Site, del15N:C_percent)%>%
+  pivot_longer(cols = del15N:C_percent) %>%
+  rename(MeanValue = value)
+  
+
+TMeans<-TurbMeans %>%
+  mutate(Site = factor(Site, levels = c("Lagoon","La Source","Nordhoff")))%>%
+  ggplot(aes(x = Site, y = MeanValue))+
+  geom_point(size = 3)+
+  geom_errorbar(aes(ymin = MeanValue-MeanSE, ymax = MeanValue+MeanSE), width = 0.1)+
+#  geom_point(data = SeepN, aes(x = Site, y = MeanValue), color = "red")+
+  facet_wrap(~name, scales = "free")+
+  theme_bw()
+
+#TMeans|NN
+ggsave(here("Output","TurbData.png"), width = 8, height = 8)
