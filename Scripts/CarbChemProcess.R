@@ -79,7 +79,7 @@ AllCO2 <- pHSlope %>%
   select(Site, CowTagID, SeepCode, Date, SamplingTime)%>%
   bind_cols(AllCO2) %>%
   right_join(pHSlope) %>%
-  select(Site, CowTagID, SeepCode, Date, Day_Night, SamplingTime, Tide, Seep_Reef,DIC, pCO2,OmegaAragonite,TA, pH, Salinity_In_Lab, TempInSitu)%>%
+  select(Site, CowTagID, SeepCode, Date, Day_Night, SamplingTime, Tide, Seep_Reef,DIC, pCO2,OmegaAragonite,TA, pH, Salinity_In_Lab, TempInSitu,NN, NO2, PO4, SiO2, NH3 )%>%
   mutate(Day_Night = factor(Day_Night, levels = c("Dawn","Noon","Dusk")))
 
 ### Make some plots
@@ -421,3 +421,81 @@ TMeans<-TurbMeans %>%
 
 #TMeans|NN
 ggsave(here("Output","TurbData.png"), width = 8, height = 8)
+
+
+#### water column nutrient plots
+
+AllCO2 %>%
+  ggplot(aes(x = SiO2, y = NN, color = Site))+
+  geom_point()
+
+AllCO2 %>%
+  #filter(Seep_Reef == "Seep")%>%
+  filter(Site != "Lagoon")%>%
+  ggplot(aes(x = SiO2, y = NN, color = Site))+
+  geom_point()+
+  facet_wrap(~Site)
+
+
+AllCO2 %>%
+  filter(Seep_Reef == "Seep")%>%
+  filter(Site != "Lagoon")%>%
+  ggplot(aes(x = SiO2, y = Salinity_In_Lab, color = Site))+
+  geom_point()+
+  facet_wrap(~Site)
+
+AllCO2 %>%
+  filter(Site != "Lagoon")%>%
+  ggplot(aes(x = SiO2, y = NN, color = Site))+
+  geom_point()+
+  coord_trans(x = "log", y = "log")+
+  geom_smooth(method = "lm")+
+  facet_wrap(~Site)
+
+
+AllCO2 %>%
+ filter(!CowTagID %in% c(13,16))%>%
+  filter(Seep_Reef == "Reef")%>%
+  ggplot(aes(x = SiO2, y = NN, color = Site))+
+  geom_point()+
+  geom_label(aes(label = CowTagID))+
+#  coord_trans(x = "log", y = "log")+
+  #geom_smooth(method = "lm")
+  facet_wrap(~Day_Night)
+
+
+AllCO2 %>%
+  left_join(meta) %>%
+  filter(!CowTagID %in% c(13,16))%>%
+  ggplot(aes(x = Depth_logger, y = NN, color = Site))+
+  geom_point()+
+  facet_wrap(Site~Day_Night)
+
+
+AllCO2 %>%
+  left_join(meta) %>%
+  group_by(Site, CowTagID)%>%
+  summarise_at(vars(DIC:DIC_salnorm, del15N:C_percent), .funs = mean)%>%
+  drop_na()%>%
+  ggplot(aes(x = SiO2, y = N_percent, color = Site))+
+  geom_point()+
+  geom_label(aes(label = CowTagID))+
+  facet_wrap(~Site)
+
+
+AllCO2 %>%
+#  left_join(meta) %>%
+  drop_na(NN)%>%
+  ggplot(aes(x = Site, y = NN, color = Day_Night))+
+  geom_boxplot()+
+  geom_jitter(position = position_dodge(width = 0.8))+
+  geom_label(aes(label = CowTagID),position = position_dodge(width = 0.8))
+
+
+
+AllCO2 %>%
+  #  left_join(meta) %>%
+  drop_na(NN)%>%
+  ggplot(aes(x = PO4, y = NN))+
+  geom_point(aes(color = Day_Night))+
+  facet_wrap(~CowTagID, scale = "free")

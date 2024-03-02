@@ -1,4 +1,4 @@
-Site,CowTagID,SeepCode,Seep_Reef,Tide,Day_Night,Date,Salinity_In_Field,SamplingTime,TempInLab,mV,Salinity_In_Lab,TempInSitu,TA,TrisCalDate,N+N,NO2,PO4,SiO2,NH3,Notes
+Site,CowTagID,SeepCode,Seep_Reef,Tide,Day_Night,Date,Salinity_In_Field,SamplingTime,TempInLab,mV,Salinity_In_Lab,TempInSitu,TA,TrisCalDate,NN,NO2,PO4,SiO2,NH3,Notes
 Lagoon,41,a,Seep,Low,Dawn,10/29/2023,14.3,5:15:00,24.55,-55.2,14.14,25.61,2789.570562,20231008,,,,,,
 Lagoon,42,,Reef,Low,Dawn,10/29/2023,36.9,5:45:00,24.96,-68.2,36.27,27.12,2333.930133,20231008,,,,,,
 Lagoon,43,,Reef,Low,Dawn,10/29/2023,37.1,5:45:00,25,-70,36.35,27.3,2340.875693,20231008,,,,,,
