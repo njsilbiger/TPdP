@@ -430,11 +430,11 @@ AllCO2 %>%
   geom_point()
 
 AllCO2 %>%
-  filter(Seep_Reef == "Seep")%>%
+#  filter(Seep_Reef == "Seep")%>%
 #  filter(Site != "Lagoon")%>%
   ggplot(aes(x = SiO2, y = NN, color = Site))+
   geom_point()+
-  facet_wrap(~Site)
+  facet_wrap(Seep_Reef~Site)
 
 
 AllCO2 %>%
@@ -501,3 +501,24 @@ AllCO2 %>%
   ggplot(aes(x = PO4, y = NN))+
   geom_point(aes(color = Day_Night))+
   facet_wrap(~CowTagID, scale = "free")
+
+AllCO2 %>%
+  filter(!CowTagID %in% c(13,16))%>%
+  #filter(Seep_Reef == "Reef")%>%
+  group_by(Site, Seep_Reef)%>%
+  summarise(NN_mean = mean(NN, na.rm = TRUE),
+            NN_se = sd(NN,na.rm = TRUE)/sqrt(n()))%>%
+  mutate(Site = factor(Site, levels = c("Lagoon", "La Source","Nordhoff")))%>%
+  ggplot(aes(x = Site))+
+  geom_point(aes(y = NN_mean), size = 3)+
+  geom_errorbar(aes(ymin = NN_mean - NN_se, ymax = NN_mean+NN_se), width = .1)+
+  labs(y = expression(paste("Mean nitrate + nitrite (",mu,"mol L"^-1,")")))+
+  facet_wrap(~Seep_Reef, scales = "free")+
+  theme_bw()
+ggsave(here("Output","NN_mean.png"), width = 8, height = 4)
+
+modN<-lmer(NN~Site +(1|Day_Night), data = AllCO2 %>%
+             filter(!CowTagID %in% c(13,16)) %>%
+             filter(Seep_Reef == "Reef"))
+anova(modN)
+modN
