@@ -430,8 +430,8 @@ AllCO2 %>%
   geom_point()
 
 AllCO2 %>%
-  #filter(Seep_Reef == "Seep")%>%
-  filter(Site != "Lagoon")%>%
+  filter(Seep_Reef == "Seep")%>%
+#  filter(Site != "Lagoon")%>%
   ggplot(aes(x = SiO2, y = NN, color = Site))+
   geom_point()+
   facet_wrap(~Site)
@@ -439,13 +439,14 @@ AllCO2 %>%
 
 AllCO2 %>%
   filter(Seep_Reef == "Seep")%>%
-  filter(Site != "Lagoon")%>%
+#  filter(Site != "Lagoon")%>%
   ggplot(aes(x = SiO2, y = Salinity_In_Lab, color = Site))+
   geom_point()+
   facet_wrap(~Site)
 
 AllCO2 %>%
-  filter(Site != "Lagoon")%>%
+ # filter(Site != "Lagoon")%>%
+  drop_na(NN)%>%
   ggplot(aes(x = SiO2, y = NN, color = Site))+
   geom_point()+
   coord_trans(x = "log", y = "log")+
@@ -486,6 +487,7 @@ AllCO2 %>%
 AllCO2 %>%
 #  left_join(meta) %>%
   drop_na(NN)%>%
+  filter(Seep_Reef == "Reef")%>%
   ggplot(aes(x = Site, y = NN, color = Day_Night))+
   geom_boxplot()+
   geom_jitter(position = position_dodge(width = 0.8))+
