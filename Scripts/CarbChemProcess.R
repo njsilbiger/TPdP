@@ -412,6 +412,7 @@ SeepN<-meta %>%
 
 TMeans<-TurbMeans %>%
   mutate(Site = factor(Site, levels = c("Lagoon","La Source","Nordhoff")))%>%
+  filter(name %in% c("del15N","N_percent"))%>%
   ggplot(aes(x = Site, y = MeanValue))+
   geom_point(size = 3)+
   geom_errorbar(aes(ymin = MeanValue-MeanSE, ymax = MeanValue+MeanSE), width = 0.1)+
@@ -420,8 +421,19 @@ TMeans<-TurbMeans %>%
   theme_bw()
 
 #TMeans|NN
-ggsave(here("Output","TurbData.png"), width = 8, height = 8)
+ggsave(here("Output","TurbData.png"), width = 8, height = 4)
 
+SeepN %>%
+  mutate(Site = factor(Site, levels = c("Lagoon","La Source","Nordhoff")))%>%
+  filter(name %in% c("del15N","N_percent"))%>%
+  ggplot(aes(x = Site, y = MeanValue))+
+  geom_point(size = 3)+
+  #  geom_point(data = SeepN, aes(x = Site, y = MeanValue), color = "red")+
+  facet_wrap(~name, scales = "free")+
+  theme_bw()
+
+#TMeans|NN
+ggsave(here("Output","TurbData_Seep.png"), width = 8, height = 4)
 
 #### water column nutrient plots
 
