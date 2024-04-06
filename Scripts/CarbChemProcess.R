@@ -453,25 +453,32 @@ AllCO2 %>%
   filter(Seep_Reef == "Seep")%>%
 #  filter(Site != "Lagoon")%>%
   ggplot(aes(x = SiO2, y = Salinity_In_Lab, color = Site))+
-  geom_point()+
-  facet_wrap(~Site)
+  geom_point()
 
 AllCO2 %>%
  # filter(Site != "Lagoon")%>%
-  drop_na(NN)%>%
+  drop_na(NN,SiO2)%>%
   ggplot(aes(x = SiO2, y = NN, color = Site))+
   geom_point()+
-  coord_trans(x = "log", y = "log")+
+ # coord_trans(x = "log", y = "log")+
   geom_smooth(method = "lm")+
   facet_wrap(~Site)
 
+AllCO2 %>%
+  # filter(Site != "Lagoon")%>%
+  filter(Seep_Reef == "Seep")%>%
+  drop_na(NN,SiO2)%>%
+  ggplot(aes(x = pH, y = NN, color = Site))+
+  geom_point()+
+  # coord_trans(x = "log", y = "log")+
+  geom_smooth(method = "lm")
 
 AllCO2 %>%
- filter(!CowTagID %in% c(13,16))%>%
+# filter(!CowTagID %in% c(13,16))%>%
   filter(Seep_Reef == "Reef")%>%
-  ggplot(aes(x = SiO2, y = NN, color = Site))+
+  ggplot(aes(x = log(SiO2), y = NN, color = Site))+
   geom_point()+
-  geom_label(aes(label = CowTagID))+
+#  geom_label(aes(label = CowTagID))+
 #  coord_trans(x = "log", y = "log")+
   #geom_smooth(method = "lm")
   facet_wrap(~Day_Night)
@@ -479,10 +486,11 @@ AllCO2 %>%
 
 AllCO2 %>%
   left_join(meta) %>%
-  filter(!CowTagID %in% c(13,16))%>%
+  filter(Seep_Reef == "Reef")%>%
+ # filter(!CowTagID %in% c(13,16))%>%
   ggplot(aes(x = Depth_logger, y = NN, color = Site))+
   geom_point()+
-  facet_wrap(Site~Day_Night)
+  facet_wrap(Site~Day_Night, scale = "free")
 
 
 AllCO2 %>%
@@ -490,10 +498,10 @@ AllCO2 %>%
   group_by(Site, CowTagID)%>%
   summarise_at(vars(DIC:DIC_salnorm, del15N:C_percent), .funs = mean)%>%
   drop_na()%>%
-  ggplot(aes(x = SiO2, y = N_percent, color = Site))+
+  ggplot(aes(x = NN, y = N_percent, color = Site))+
   geom_point()+
-  geom_label(aes(label = CowTagID))+
-  facet_wrap(~Site)
+#  geom_label(aes(label = CowTagID))+
+  facet_wrap(~Site, scale = "free")
 
 
 AllCO2 %>%
@@ -502,8 +510,8 @@ AllCO2 %>%
   filter(Seep_Reef == "Reef")%>%
   ggplot(aes(x = Site, y = NN, color = Day_Night))+
   geom_boxplot()+
-  geom_jitter(position = position_dodge(width = 0.8))+
-  geom_label(aes(label = CowTagID),position = position_dodge(width = 0.8))
+  geom_jitter(position = position_dodge(width = 0.8))
+#  geom_label(aes(label = CowTagID),position = position_dodge(width = 0.8))
 
 
 
@@ -515,7 +523,7 @@ AllCO2 %>%
   facet_wrap(~CowTagID, scale = "free")
 
 AllCO2 %>%
-  filter(!CowTagID %in% c(13,16))%>%
+ # filter(!CowTagID %in% c(13,16))%>%
   #filter(Seep_Reef == "Reef")%>%
   group_by(Site, Seep_Reef)%>%
   summarise(NN_mean = mean(NN, na.rm = TRUE),
