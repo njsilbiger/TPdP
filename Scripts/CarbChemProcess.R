@@ -1,6 +1,6 @@
 ## process pH for Orion
 # Created by Nyssa Silbiger
-# Edited on 11/06/2023
+# Edited on 4/06/2024
 
 library(tidyverse)
 library(seacarb)
@@ -27,6 +27,9 @@ pHData<-read_csv(here("Data","pHProbe_Data.csv"))%>%
 
 # Bring in metadata
 meta<-read_csv(here("Data","CowTagMetaData.csv"))
+
+# fdom data
+fdom<-read_csv(here("Data","fDOM_Tahiti.csv"))
 
 ## take the mV calibration files by each date and use them to calculate pH
 pHSlope<-pHcalib %>%
@@ -514,7 +517,6 @@ AllCO2 %>%
 #  geom_label(aes(label = CowTagID),position = position_dodge(width = 0.8))
 
 
-
 AllCO2 %>%
   #  left_join(meta) %>%
   drop_na(NN)%>%
@@ -542,3 +544,10 @@ modN<-lmer(NN~Site +(1|Day_Night), data = AllCO2 %>%
              filter(Seep_Reef == "Reef"))
 anova(modN)
 modN
+
+
+#### bring in the fdom data
+AllCO2<-AllCO2 %>% 
+  left_join(fdom)
+
+
