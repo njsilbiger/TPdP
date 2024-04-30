@@ -146,6 +146,9 @@ AllCO2 <-AllCO2 %>%
   mutate(TA_salnorm = TA*Salinity_In_Lab/36, # salinity normalized
          DIC_salnorm = DIC*Salinity_In_Lab/36)
 
+#### bring in the fdom data
+AllCO2<-AllCO2 %>% 
+  left_join(fdom) 
 
 modTADIC<-lm(TA_salnorm~DIC_salnorm*Day_Night*Site , data =AllCO2 %>%
                  filter(#Site!= "Lagoon",
@@ -545,9 +548,219 @@ modN<-lmer(NN~Site +(1|Day_Night), data = AllCO2 %>%
 anova(modN)
 modN
 
+## plot fdom
 
-#### bring in the fdom data
-AllCO2<-AllCO2 %>% 
-  left_join(fdom)
+AllCO2 %>%
+#  filter(Seep_Reef == "Reef")%>%
+  ggplot(aes(x = Salinity_In_Lab, y = MarineHumic+UVHumic+VisibleHumic, color = Site))+
+  geom_point()+
+  #  geom_label(aes(label = CowTagID))+
+  #  coord_trans(x = "log", y = "log")+
+  geom_smooth(method = "lm")+
+  labs(x = "Salinity (psu)", y = "Humic-like fDom (raman units)")+
+  facet_wrap(Seep_Reef~Site, scales = "free")
+
+ggsave(here("Output","humics.png"), width = 8, height = 4)
 
 
+AllCO2 %>%
+  #  filter(Seep_Reef == "Reef")%>%
+  ggplot(aes(x = Salinity_In_Lab, y = Tyrosine+Tryptophan+Phenylalanine))+
+  geom_point()+
+  #  geom_label(aes(label = CowTagID))+
+  #  coord_trans(x = "log", y = "log")+
+  geom_smooth(method = "lm")+
+  labs(x = "Salinity (psu)", y = "Proteinaceous-like fDom (raman units)")+
+  facet_wrap(Seep_Reef~Site, scales = "free")
+
+ggsave(here("Output","prot.png"), width = 8, height = 4)
+
+AllCO2 %>%
+  #  filter(Seep_Reef == "Reef")%>%
+  ggplot(aes(x = Salinity_In_Lab, y = MC))+
+  geom_point()+
+  #  geom_label(aes(label = CowTagID))+
+  #  coord_trans(x = "log", y = "log")+
+  geom_smooth(method = "lm")+
+  labs(x = "Salinity (psu)", y = "M to C")+
+  facet_wrap(Seep_Reef~Site, scales = "free")
+ggsave(here("Output","MC.png"), width = 8, height = 4)
+
+### pca for fdom ###
+
+## make a pca of all the fdom data for the reef
+pcadata<-AllCO2  %>%
+  filter(Seep_Reef == "Reef") %>%
+  ungroup()%>%
+  dplyr::select(UVHumic:MC) %>%
+  drop_na()
+
+# run a pca
+pca<-prcomp(pcadata, scale. = TRUE, center = TRUE)
+
+# calculate percent explained by each PC
+perc.explained<-round(100*pca$sdev/sum(pca$sdev),1)
+
+# Extract the scores and loadings
+PC_scores <-as_tibble(pca$x[,1:2])
+
+PC_loadings<-as_tibble(pca$rotation)%>%
+  bind_cols(labels = rownames(pca$rotation))
+
+
+data_pca<-AllCO2  %>%
+  filter(Seep_Reef == "Reef") %>%
+  drop_na(UVHumic:MC)%>%
+  bind_cols(PC_scores)%>%
+  mutate(Site = factor(Site, levels = c("Lagoon","La Source","Nordhoff")))
+
+
+p1<-data_pca %>%
+  #mutate(time_point = factor(time_point))%>%
+  ggplot(aes(x = PC1, y = PC2, color = Site, shape = Day_Night))+
+  coord_cartesian(xlim = c(-6, 6), ylim = c(-6, 6)) +
+  # scale_shape_manual(values = c(1, 22,15,16))+
+  scale_colour_manual(values = c("#01c3e6","#122A64","#5F9EA0"))+
+  scale_fill_manual(values = c("#01c3e6","#122A64","#5F9EA0"))+
+  geom_hline(yintercept = 0, lty = 2)+
+  geom_vline(xintercept = 0, lty = 2)+
+  ggforce::geom_mark_ellipse(
+    aes(fill = Site, label = paste(Site, Day_Night), color =Site),
+    alpha = .35, show.legend = FALSE,  label.buffer = unit(1, "mm"), con.cap=0, tol = 0.05)+
+  geom_point(size = 2) +
+  labs(
+    x = paste0("PC1 ","(",perc.explained[1],"%)"),
+    y = paste0("PC2 ","(",perc.explained[2],"%)"))+
+  theme_bw()+
+  theme(legend.position = "none",
+     #   axis.text.x = element_blank(),
+    #    axis.ticks.x = element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 18),
+        strip.background = element_blank(),
+        #      strip.text = element_blank()
+  )+
+  facet_wrap(~Site)
+  
+  
+
+p2<-PC_loadings %>%
+  ggplot(aes(x=PC1, y=PC2, label=labels))+
+  geom_richtext(aes(x = PC1*8+0.1, y = PC2*8+.1 ), show.legend = FALSE, size = 5, fill=NA, label.colour = NA) +
+  geom_hline(yintercept = 0, lty = 2)+
+  geom_vline(xintercept = 0, lty = 2)+
+  geom_segment(data = PC_loadings, aes(x=0,y=0,xend=PC1*8,yend=PC2*8),size = 1.2,
+               arrow=arrow(length=unit(0.1,"cm")))+
+  coord_cartesian(xlim = c(-6, 6), ylim = c(-6, 6)) +
+  labs(
+    y = "",
+    x = "")+
+  #y = paste0("PC2 ","(",perc.explained_both[2],"%)"))+
+  #  scale_color_manual(values = wes_palette("Darjeeling1"))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        #legend.position = c(0.75, 0.75),
+        legend.position = "none",
+        legend.text = element_markdown(size = 16),
+        legend.key.size = unit(1, 'cm'),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 16))
+
+
+p1/plot_spacer()/p2+plot_layout(heights = c(2,-0.1, 1))
+
+ggsave(here("Output","fdom_pca_reef.png"), width = 10, height = 6)
+
+##### Do a unique pca by site to see how the correlates differ.  Do for both seep and reef
+
+### Now the same with the alll biogeochem data 
+## make a pca of all the fdom data for the reef
+pcadata<-AllCO2  %>%
+  filter(Seep_Reef == "Reef") %>%
+  ungroup()%>%
+  dplyr::select(Salinity_In_Lab,pH, TA, NN, PO4, SiO2, UVHumic:MC) %>%
+  drop_na()
+
+# run a pca
+pca<-prcomp(pcadata, scale. = TRUE, center = TRUE)
+
+# calculate percent explained by each PC
+perc.explained<-round(100*pca$sdev/sum(pca$sdev),1)
+
+# Extract the scores and loadings
+PC_scores <-as_tibble(pca$x[,1:2])
+
+PC_loadings<-as_tibble(pca$rotation)%>%
+  bind_cols(labels = rownames(pca$rotation))
+
+
+data_pca<-AllCO2  %>%
+  filter(Seep_Reef == "Reef") %>%
+  drop_na(Salinity_In_Lab,pH, TA, NN, PO4, SiO2, UVHumic:MC)%>%
+  bind_cols(PC_scores)%>%
+  mutate(Site = factor(Site, levels = c("Lagoon","La Source","Nordhoff")))
+
+
+p1<-data_pca %>%
+  #mutate(time_point = factor(time_point))%>%
+  ggplot(aes(x = PC1, y = PC2, color = Site, shape = Day_Night))+
+  coord_cartesian(xlim = c(-6, 6), ylim = c(-6, 6)) +
+  # scale_shape_manual(values = c(1, 22,15,16))+
+  scale_colour_manual(values = c("#01c3e6","#122A64","#5F9EA0"))+
+  scale_fill_manual(values = c("#01c3e6","#122A64","#5F9EA0"))+
+  geom_hline(yintercept = 0, lty = 2)+
+  geom_vline(xintercept = 0, lty = 2)+
+  ggforce::geom_mark_ellipse(
+    aes(fill = Site, label = paste(Site, Day_Night), color =Site),
+    alpha = .35, show.legend = FALSE,  label.buffer = unit(1, "mm"), con.cap=0, tol = 0.05)+
+  geom_point(size = 2) +
+  labs(
+    x = paste0("PC1 ","(",perc.explained[1],"%)"),
+    y = paste0("PC2 ","(",perc.explained[2],"%)"))+
+  theme_bw()+
+  theme(legend.position = "none",
+        #   axis.text.x = element_blank(),
+        #    axis.ticks.x = element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 18),
+        strip.background = element_blank(),
+        #      strip.text = element_blank()
+  )+
+  facet_wrap(~Site)
+
+
+
+p2<-PC_loadings %>%
+  ggplot(aes(x=PC1, y=PC2, label=labels))+
+  geom_richtext(aes(x = PC1*8+0.1, y = PC2*8+.1 ), show.legend = FALSE, size = 5, fill=NA, label.colour = NA) +
+  geom_hline(yintercept = 0, lty = 2)+
+  geom_vline(xintercept = 0, lty = 2)+
+  geom_segment(data = PC_loadings, aes(x=0,y=0,xend=PC1*8,yend=PC2*8),size = 1.2,
+               arrow=arrow(length=unit(0.1,"cm")))+
+  coord_cartesian(xlim = c(-6, 6), ylim = c(-6, 6)) +
+  labs(
+    y = "",
+    x = "")+
+  #y = paste0("PC2 ","(",perc.explained_both[2],"%)"))+
+  #  scale_color_manual(values = wes_palette("Darjeeling1"))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        #legend.position = c(0.75, 0.75),
+        legend.position = "none",
+        legend.text = element_markdown(size = 16),
+        legend.key.size = unit(1, 'cm'),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 16))
+
+
+p1/plot_spacer()/p2+plot_layout(heights = c(2,-0.1, 1))
+
+ggsave(here("Output","fdom_pca_reef.png"), width = 10, height = 6)
