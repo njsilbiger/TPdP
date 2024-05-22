@@ -1,1 +1,5 @@
-﻿LoggerID,date,pre_post,time_in,time_out,cond_HL,cond_uS,EC_SC,temp_HL
+﻿LoggerID,date,pre_post,time_in,time_out,cond_HL,cond_uS,EC_SC,temp_C,notes
+CT_335,5/21/24,pre,15:36,15:38,H,36.8,SP,28.421,
+CT_350,5/21/24,pre,15:36,15:38,H,36.8,SP,28.421,
+CT_335,,post,,,H,,SP,,
+CT_350,,post,,,H,,SP,,
