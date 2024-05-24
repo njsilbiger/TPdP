@@ -1,2 +1,2 @@
-﻿LoggerID,date,pre_post,time_in,depth
-WL_872,5/22/24,pre,,0
+﻿LoggerID,date,pre_post,time_in,time_out,depth
+WL_872,5/22/24,pre,14:01,14:03,0
