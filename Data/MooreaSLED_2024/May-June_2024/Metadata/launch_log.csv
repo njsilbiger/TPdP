@@ -1,15 +1,33 @@
 ﻿serial,log_type,time_start,time_end,notes
-335,CT,5/22/24 14:15,5/24/24 15:15,
-350,CT,5/22/24 14:15,5/24/24 15:15,
-872,WL,5/22/24 14:15,5/24/24 15:15,
-5988,pendent,5/22/24 14:15,5/24/24 15:15,
-5858,pendent,5/22/24 14:15,5/24/24 15:15,
-195,pH,5/22/24 14:15,5/24/24 15:15,
-646496,miniDOT,5/22/24 14:15,5/24/24 15:15,
-335,CT,5/27/24 10:20,5/31/24 15:15,
-350,CT,5/27/24 10:20,5/31/24 15:15,
-872,WL,5/27/24 10:20,5/31/24 15:15,
-5988,pendent,5/27/24 10:20,5/31/24 15:15,
-5858,pendent,5/27/24 10:20,5/31/24 15:15,
-195,pH,5/27/24 10:20,5/31/24 15:15,
-646496,miniDOT,5/27/24 10:20,5/31/24 15:15,
+335,CT,5/22/24 14:15,5/24/24 15:15,trip deployment 1
+350,CT,5/22/24 14:15,5/24/24 15:15,trip deployment 1
+872,WL,5/22/24 14:15,5/24/24 15:15,trip deployment 1
+5988,pendent,5/22/24 14:15,5/24/24 15:15,trip deployment 1
+5858,pendent,5/22/24 14:15,5/24/24 15:15,trip deployment 1
+195,pH,5/22/24 14:15,5/24/24 15:15,trip deployment 1
+646496,miniDOT,5/22/24 14:15,5/24/24 15:15,trip deployment 1
+335,CT,5/27/24 10:20,5/31/24 15:15,trip deployment 2
+350,CT,5/27/24 10:20,5/31/24 15:15,trip deployment 2
+872,WL,5/27/24 10:20,5/31/24 15:15,trip deployment 2
+5988,pendent,5/27/24 10:20,5/31/24 15:15,trip deployment 2
+5858,pendent,5/27/24 10:20,5/31/24 15:15,trip deployment 2
+195,pH,5/27/24 10:20,5/31/24 15:15,trip deployment 2
+646496,miniDOT,5/27/24 10:20,5/31/24 15:15,trip deployment 2
+335,CT,6/3/24 16:30,6/7/24 17:15,trip deployment 3
+350,CT,6/3/24 16:30,6/7/24 17:15,trip deployment 3
+872,WL,6/3/24 16:30,6/7/24 17:15,trip deployment 3
+5988,pendent,6/3/24 16:30,6/7/24 17:15,trip deployment 3
+5858,pendent,6/3/24 16:30,6/7/24 17:15,trip deployment 3
+646496,miniDOT,6/3/24 16:30,6/7/24 17:15,trip deployment 3
+335,CT,6/10/24 14:30,6/15/24 11:20,trip deployment 4
+350,CT,6/10/24 14:30,6/15/24 11:20,trip deployment 4
+872,WL,6/10/24 14:30,6/15/24 11:20,trip deployment 4
+5988,pendent,6/10/24 14:30,6/15/24 11:20,trip deployment 4
+5858,pendent,6/10/24 14:30,6/15/24 11:20,trip deployment 4
+646496,miniDOT,6/10/24 14:30,6/15/24 11:20,trip deployment 4
+335,CT,6/17/24 13:00,,trip deployment 5
+350,CT,6/17/24 13:00,,trip deployment 5
+872,WL,6/17/24 13:00,,trip deployment 5
+5988,pendent,6/17/24 13:00,,trip deployment 5
+5858,pendent,6/17/24 13:00,,trip deployment 5
+646496,miniDOT,6/17/24 13:00,,trip deployment 5
